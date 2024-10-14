@@ -1,1 +1,1 @@
-udt
+Teraz na serio z pustego repozytorium zrobimy pełne. Jest to moja pierwsza próba zrobienia projektu w Javie. Spróbuję zrobić prosty crawler
