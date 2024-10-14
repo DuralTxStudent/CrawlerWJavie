@@ -1,1 +1,3 @@
-Teraz na serio z pustego repozytorium zrobimy pełne. Jest to moja pierwsza próba zrobienia projektu w Javie. Spróbuję zrobić prosty crawler
+Teraz na serio z pustego repozytorium zrobimy pełne. Jest to moja pierwsza próba zrobienia projektu w Javie. Spróbuję zrobić prosty crawler.
+
+Nim przepcham na mastera, postaram się go ulepszyć
