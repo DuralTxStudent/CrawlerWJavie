@@ -5,17 +5,20 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Crawler {
 
     public static void main(String[] args) {
-        String url = "https://www.nac.gov.pl";
+        System.out.println("Wpisz adres strony, którą chcesz pobrać, bez części https://www.");
+        Scanner scanner = new Scanner(System.in);
+        String url = "https://www." + scanner.nextLine();
         crawl(1, url, new ArrayList<>());
     }
 
     private static void crawl(int level, String url, ArrayList<String> visited)
     {
-        if(level <= 5) {
+        if(level <= 3) {
             Document doc = request(url, visited);
             if(doc != null) {
                 for(Element link : doc.select("a[href]")) {
