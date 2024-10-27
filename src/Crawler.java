@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.FileWriter;
 import java.io.PrintStream;
+import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class Crawler {
 
@@ -46,43 +50,70 @@ public class Crawler {
                     String next_link = link.absUrl("href");
                     if(!visited.contains(next_link))
                     {
-                        crawl(level ++, next_link, visited);
+                        crawl(level ++, next_link, visited); //Można też zastosować level +1
                     }
                 }
             }
-
-
-
         }
     }
 
-    private static Document request(String url, ArrayList<String> v) {
+    public static Document request(String url, ArrayList<String> v) {
         try {
             Connection con = Jsoup.connect(url);
             Document doc = con.get();
             Elements images = doc.select("img");
-            for (Element img : images) {
-                String imgUrl = img.absUrl("src");
-                System.out.println("Image URL: " + imgUrl);
+            int imageCount = 0;
 
-
-            if(con.response().statusCode() == 200) {
+            if (con.response().statusCode() == 200) {
                 System.out.println("Link: " + url);
                 System.out.println(doc.title());
                 v.add(url);
 
-                return doc;
+                for (Element img : images) {
+                    String imgUrl = img.absUrl("src");
+                    System.out.println("Pobieramy: " + imgUrl);
 
+                    // Tworzenie nazwy pliku z numeracją
+                    String fileName = "Pobrany_obraz_" + imageCount + ".jpg";
+                    downloadImage(imgUrl, fileName);
+                    imageCount++; // Zwiększ numerację, możemy o +1 zamiast ++
+                }
+
+                return doc;
             }
             return null;
-        }
-
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             System.err.println("Błąd przy łączeniu z: " + url + " - " + e.getMessage());
             return null;
-
         }
-        return null;
+    }
+    public static void downloadImage(String imageUrl, String fileName) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.connect();
+
+
+            if (connection.getResponseCode() == 200) {
+                InputStream inputStream = connection.getInputStream();
+                FileOutputStream outputStream = new FileOutputStream(fileName);
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+
+                outputStream.close();
+                inputStream.close();
+                System.out.println("Obraz został poprawnie pobrany: " + fileName);
+            } else {
+                System.out.println("Nawaliliśmy z: " + connection.getResponseCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
+
