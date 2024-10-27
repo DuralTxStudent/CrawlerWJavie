@@ -2,6 +2,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 
 import java.io.IOException;
@@ -14,34 +15,43 @@ public class Crawler {
 
     public static void main(String[] args) {
 
-        try {
+        try
+        {
         System.out.println("Wpisz adres strony, którą chcesz pobrać, bez części https://www.");
         Scanner scanner = new Scanner(System.in);
         String url = "https://www." + scanner.nextLine();
         crawl(1, url, new ArrayList<>());
-            PrintStream out = new PrintStream(String.valueOf(new FileWriter("info.txt")));
+            PrintStream out = new PrintStream(String.valueOf(new FileWriter("linki.txt")));
             PrintStream err = new PrintStream(String.valueOf(new FileWriter("errors.txt")));
             System.setOut(out);
             System.setErr(err);
 
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             System.err.println("Wystąpił błąd: " + e.getMessage());
             e.printStackTrace(System.err);
         }
+
     }
 
     private static void crawl(int level, String url, ArrayList<String> visited)
     {
-        if(level <= 3) {
+        if(level <= 3)
+        {
             Document doc = request(url, visited);
-            if(doc != null) {
-                for(Element link : doc.select("a[href]")) {
+            if(doc != null)
+            {
+                for(Element link : doc.select("a[href]"))
+                {
                     String next_link = link.absUrl("href");
-                    if(!visited.contains(next_link)) {
+                    if(!visited.contains(next_link))
+                    {
                         crawl(level ++, next_link, visited);
                     }
                 }
             }
+
+
 
         }
     }
@@ -50,6 +60,11 @@ public class Crawler {
         try {
             Connection con = Jsoup.connect(url);
             Document doc = con.get();
+            Elements images = doc.select("img");
+            for (Element img : images) {
+                String imgUrl = img.absUrl("src");
+                System.out.println("Image URL: " + imgUrl);
+
 
             if(con.response().statusCode() == 200) {
                 System.out.println("Link: " + url);
@@ -61,11 +76,13 @@ public class Crawler {
             }
             return null;
         }
+
+        }
         catch(IOException e) {
             System.err.println("Błąd przy łączeniu z: " + url + " - " + e.getMessage());
             return null;
 
         }
+        return null;
     }
-
 }
