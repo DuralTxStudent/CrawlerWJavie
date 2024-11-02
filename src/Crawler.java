@@ -22,10 +22,10 @@ public class Crawler {
 
         try
         {
-        System.out.println("Wpisz adres strony, którą chcesz pobrać, bez części https://www.");
-        Scanner scanner = new Scanner(System.in);
-        String url = "https://www." + scanner.nextLine();
-        crawl(1, url, new ArrayList<>());
+            System.out.println("Wpisz adres strony, którą chcesz pobrać, bez części https://www.");
+            Scanner scanner = new Scanner(System.in);
+            String url = "https://www." + scanner.nextLine();
+            crawl(1, url, new ArrayList<>());
             PrintStream out = new PrintStream(new FileOutputStream("linki.txt"));
             PrintStream err = new PrintStream(new FileOutputStream("errors.txt"));
             System.setOut(out);
@@ -41,7 +41,7 @@ public class Crawler {
 
     }
 
-    private static void crawl(int level, String url, ArrayList<String> visited)
+    public static void crawl(int level, String url, ArrayList<String> visited)
     {
         if(level <= 3)
         {
@@ -53,7 +53,7 @@ public class Crawler {
                     String next_link = link.absUrl("href");
                     if(!visited.contains(next_link))
                     {
-                        crawl(level ++, next_link, visited); //Można też zastosować level +1
+                        crawl(level +1, next_link, visited); //Można też zastosować level +1
                     }
                 }
             }
@@ -81,7 +81,7 @@ public class Crawler {
                     // Tworzenie nazwy pliku z numeracją
                     String fileName = "Pobrany_obraz_" + imageCount + ".jpg";
                     downloadImage(imgUrl, fileName);
-                    imageCount++; // Zwiększ numerację, możemy o +1 zamiast ++
+                    imageCount++;
                 }
 
                 return doc;
@@ -97,6 +97,11 @@ public class Crawler {
     public static void downloadImage(String imageUrl, String fileName)
     {
         try {
+            if (imageUrl == null || imageUrl.isEmpty())                         /* Unikamy błędu: Exception in thread "main" java.lang.IllegalArgumentException: URI is not absolute */
+            {
+                System.err.println("Niepoprawny adres URL obrazu: " + imageUrl);
+                return;
+            }
             URI uri = new URI(imageUrl);
             HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
             connection.setRequestMethod("GET");
