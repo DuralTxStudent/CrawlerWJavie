@@ -6,18 +6,19 @@ import org.jsoup.select.Elements;
 
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.io.FileWriter;
 import java.io.PrintStream;
 import java.io.InputStream;
 import java.io.FileOutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URISyntaxException;
 
 public class Crawler {
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
 
         try
         {
@@ -25,12 +26,14 @@ public class Crawler {
         Scanner scanner = new Scanner(System.in);
         String url = "https://www." + scanner.nextLine();
         crawl(1, url, new ArrayList<>());
-            PrintStream out = new PrintStream(String.valueOf(new FileWriter("linki.txt")));
-            PrintStream err = new PrintStream(String.valueOf(new FileWriter("errors.txt")));
+            PrintStream out = new PrintStream(new FileOutputStream("linki.txt"));
+            PrintStream err = new PrintStream(new FileOutputStream("errors.txt"));
             System.setOut(out);
             System.setErr(err);
 
-        } catch (IOException e)
+        }
+
+        catch (IOException e)
         {
             System.err.println("Wystąpił błąd: " + e.getMessage());
             e.printStackTrace(System.err);
@@ -64,12 +67,14 @@ public class Crawler {
             Elements images = doc.select("img");
             int imageCount = 0;
 
-            if (con.response().statusCode() == 200) {
+            if (con.response().statusCode() == 200)
+            {
                 System.out.println("Link: " + url);
                 System.out.println(doc.title());
                 v.add(url);
 
-                for (Element img : images) {
+                for (Element img : images)
+                {
                     String imgUrl = img.absUrl("src");
                     System.out.println("Pobieramy: " + imgUrl);
 
@@ -82,26 +87,31 @@ public class Crawler {
                 return doc;
             }
             return null;
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             System.err.println("Błąd przy łączeniu z: " + url + " - " + e.getMessage());
             return null;
         }
     }
-    public static void downloadImage(String imageUrl, String fileName) {
+    public static void downloadImage(String imageUrl, String fileName)
+    {
         try {
-            URL url = new URL(imageUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            URI uri = new URI(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
             connection.setRequestMethod("GET");
             connection.connect();
 
 
-            if (connection.getResponseCode() == 200) {
+            if (connection.getResponseCode() == 200)
+            {
                 InputStream inputStream = connection.getInputStream();
                 FileOutputStream outputStream = new FileOutputStream(fileName);
                 byte[] buffer = new byte[4096];
                 int bytesRead;
 
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                while ((bytesRead = inputStream.read(buffer)) != -1)
+                {
                     outputStream.write(buffer, 0, bytesRead);
                 }
 
@@ -109,10 +119,12 @@ public class Crawler {
                 inputStream.close();
                 System.out.println("Obraz został poprawnie pobrany: " + fileName);
             } else {
-                System.out.println("Nawaliliśmy z: " + connection.getResponseCode());
+                System.out.println("Błąd z pobraniem: " + connection.getResponseCode());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            System.err.println("Błąd URI: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Błąd IO: " + e.getMessage());
         }
     }
 }
