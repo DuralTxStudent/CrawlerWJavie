@@ -4,10 +4,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-
 import java.io.IOException;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Scanner;
 import java.io.PrintStream;
 import java.io.InputStream;
@@ -53,7 +54,7 @@ public class Crawler {
                     String next_link = link.absUrl("href");
                     if(!visited.contains(next_link))
                     {
-                        crawl(level +1, next_link, visited); //Można też zastosować level +1
+                        crawl(level +1, next_link, visited);
                     }
                 }
             }
@@ -78,8 +79,8 @@ public class Crawler {
                     String imgUrl = img.absUrl("src");
                     System.out.println("Pobieramy: " + imgUrl);
 
-                    // Tworzenie nazwy pliku z numeracją
-                    String fileName = "Pobrany_obraz_" + imageCount + ".jpg";
+
+                    String fileName = generateUniqueFileName(imgUrl, imageCount);
                     downloadImage(imgUrl, fileName);
                     imageCount++;
                 }
@@ -94,6 +95,18 @@ public class Crawler {
             return null;
         }
     }
+    private static String generateUniqueFileName(String imgUrl, int count) {
+        // Wyodrębnienie nazwę pliku z URL
+        String fileName = imgUrl.substring(imgUrl.lastIndexOf('/') + 1);
+
+        // Upewnienie się, że nazwa pliku jest bezpieczna - kwestia dziwnych znaków
+        fileName = fileName.replaceAll("[^a-zA-Z0-9.]", "_");
+
+        // Licznik czasu by uczynić to łatwiejszym do indeksowania
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        return fileName.isEmpty() ? "_Pobrany_obraz_" + count + "_" + timestamp + ".jpg" : fileName + "_" + timestamp + ".jpg";
+    }
+
     public static void downloadImage(String imageUrl, String fileName)
     {
         try {
