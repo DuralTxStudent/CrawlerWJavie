@@ -4,6 +4,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
@@ -25,8 +26,9 @@ public class Crawler {
         {
             System.out.println("Wpisz adres strony, którą chcesz pobrać, bez części https://www.");
             Scanner scanner = new Scanner(System.in);
-            String url = "https://www." + scanner.nextLine();
-            crawl(1, url, new ArrayList<>());
+            String input = scanner.nextLine();
+            String url = "https://" + input;
+            crawl(1, url, input, new ArrayList<>());
             PrintStream out = new PrintStream(new FileOutputStream("linki.txt"));
             PrintStream err = new PrintStream(new FileOutputStream("errors.txt"));
             System.setOut(out);
@@ -42,11 +44,11 @@ public class Crawler {
 
     }
 
-    public static void crawl(int level, String url, ArrayList<String> visited)
+    public static void crawl(int level, String url, String input,  ArrayList<String> visited)
     {
         if(level <= 3)
         {
-            Document doc = request(url, visited);
+            Document doc = request(url, input, visited);
             if(doc != null)
             {
                 for(Element link : doc.select("a[href]"))
@@ -54,14 +56,14 @@ public class Crawler {
                     String next_link = link.absUrl("href");
                     if(!visited.contains(next_link))
                     {
-                        crawl(level +1, next_link, visited);
+                        crawl(level +1, next_link, input, visited);
                     }
                 }
             }
         }
     }
 
-    public static Document request(String url, ArrayList<String> v) {
+    public static Document request(String url, String input, ArrayList<String> v) {
         try {
             Connection con = Jsoup.connect(url);
             Document doc = con.get();
@@ -79,9 +81,13 @@ public class Crawler {
                     String imgUrl = img.absUrl("src");
                     System.out.println("Pobieramy: " + imgUrl);
 
+                    // Tworzenie folderu o nazwie wprowadzona strona + data
+                    String folderName = generateFolderName(input);
+                    createDirectory(folderName);
+
 
                     String fileName = generateUniqueFileName(imgUrl, imageCount);
-                    downloadImage(imgUrl, fileName);
+                    downloadImage(imgUrl, folderName + File.separator + fileName);
                     imageCount++;
                 }
 
@@ -95,11 +101,28 @@ public class Crawler {
             return null;
         }
     }
-    private static String generateUniqueFileName(String imgUrl, int count) {
-        // Wyodrębnienie nazwę pliku z URL
-        String fileName = imgUrl.substring(imgUrl.lastIndexOf('/') + 1);
+    private static String generateFolderName(String input) {
+        String safeName = input.replaceAll("[^a-zA-Z0-9]", "_");
+        String timestamp = new SimpleDateFormat("yyyy_MM_dd").format(new Date());
+        return safeName + "_" + timestamp;
+    }
 
-        // Upewnienie się, że nazwa pliku jest bezpieczna - kwestia dziwnych znaków
+    private static void createDirectory(String folderName) {
+        File dir = new File(folderName);
+        if (!dir.exists()) {
+            boolean created = dir.mkdirs();
+            if (created) {
+                System.out.println("Folder utworzony: " + folderName);
+            } else {
+                System.err.println("Nie udało się utworzyć folderu: " + folderName);
+            }
+        } else {
+            System.out.println("Folder już istnieje: " + folderName);
+        }
+    }
+
+    private static String generateUniqueFileName(String imgUrl, int count) {
+        String fileName = imgUrl.substring(imgUrl.lastIndexOf('/') + 1);
         fileName = fileName.replaceAll("[^a-zA-Z0-9.]", "_");
 
         // Licznik czasu by uczynić to łatwiejszym do indeksowania
