@@ -22,17 +22,22 @@ public class Crawler {
     public static void main(String[] args)
     {
 
-        try
+        try (PrintStream out = new PrintStream(new FileOutputStream("linki.txt"));
+             PrintStream err = new PrintStream(new FileOutputStream("errors.txt"));
+             Scanner scanner = new Scanner(System.in))
         {
+
             System.out.println("Wpisz adres strony, którą chcesz pobrać, bez części https://www.");
-            Scanner scanner = new Scanner(System.in);
+
             String input = scanner.nextLine();
             String url = "https://" + input;
-            crawl(1, url, input, new ArrayList<>());
-            PrintStream out = new PrintStream(new FileOutputStream("linki.txt"));
-            PrintStream err = new PrintStream(new FileOutputStream("errors.txt"));
             System.setOut(out);
             System.setErr(err);
+            crawl(1, url, input, new ArrayList<>());
+            // Flush służy do natychmiastowego zrzutu zawartości przed zamknięciem, wcześniej zawartość była zrzucana po zakończeniu crawlingu. Jeśli nie będę chciał by zawartośc szła w trakcie, dezaktywować te dwie linijki
+            out.flush();
+            err.flush();
+
 
         }
 
